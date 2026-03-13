@@ -1,0 +1,55 @@
+---
+description: Naming, error handling, RSC/TanStack Query, testing, and security conventions
+alwaysApply: true
+---
+
+# Project Conventions
+
+Follow these conventions in all code. Prefer the patterns and examples below.
+
+## Naming
+
+- **Variables/functions**: camelCase (e.g. `getUserData`, `isLoading`)
+- **React components**: PascalCase (e.g. `UserProfile`, `NavigationBar`)
+- **Files/directories**: kebab-case (e.g. `user-profile.tsx`, `api-route.ts`)
+- **TS interfaces/types**: PascalCase (e.g. `UserResponse`, `DashboardProps`)
+- **Prisma models**: PascalCase (e.g. `User`, `OrderItem`), fields in camelCase
+- **Constants**: UPPER_SNAKE_CASE (e.g. `MAX_RETRY_COUNT`, `API_BASE_URL`)
+
+## Error Handling & Logging
+
+- **Server**: try/catch in Server Actions and Route Handlers; use `error.tsx` for UI boundaries.
+- **Client**: Error Boundaries for component failures; log non-sensitive errors in development only.
+- **Database**: Catch Prisma errors and surface user-friendly messages.
+
+Standard server response shape:
+
+```ts
+// ✅ GOOD
+return { success: false, error: "User-friendly message" };
+// ✅ GOOD
+return { success: true, data: result };
+```
+
+## Components & Imports
+
+- Default to **React Server Components**; use `'use client'` only at leaf components.
+- Use **Server Actions** for all data mutations.
+- **Imports**: absolute paths with `@/`; order: React/Next.js → external libs (e.g. TanStack Query, Prisma) → internal → styles.
+
+## Data Fetching & State
+
+- Use **TanStack Query** for caching and state.
+- Prefer server prefetch with `queryClient.prefetchQuery` and pass state via **HydrationBoundary**.
+- Centralize **query keys** (e.g. `query-keys.ts`); set sensible `staleTime` (e.g. 5–10 min); use `useSuspenseQuery` with Suspense when appropriate.
+
+## Testing
+
+- **Unit/integration**: Vitest + React Testing Library; mock TanStack Query with a custom render wrapper.
+- **E2E**: Playwright.
+
+## Security & Practices
+
+- **TypeScript**: strict mode; no `any`.
+- **Prisma**: singleton client; validate inputs with **Zod** before DB operations.
+- Use **early returns**; keep business logic in `services`/`lib`, UI in components.

@@ -6,6 +6,17 @@ export const ROLE_LABELS: Record<Role, string> = {
   C_LEVEL: "C-Level",
 };
 
+export const DEPARTMENT_OPTIONS = [
+  "Engineering",
+  "Sales",
+  "Marketing",
+  "HR",
+  "Finance",
+  "Operations",
+  "Support",
+  "Other",
+] as const;
+
 export const PROJECT_OPTIONS = [
   "Project Alpha",
   "Project Beta",

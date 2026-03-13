@@ -41,7 +41,7 @@ export function ProjectBarChart({ data }: ProjectBarChartProps) {
           formatter={(value: number) => [`฿${value.toLocaleString()}`, "Total"]}
           contentStyle={{ borderRadius: "8px" }}
         />
-        <Bar dataKey="total" fill="var(--foreground)" radius={[4, 4, 0, 0]} />
+        <Bar dataKey="total" fill="var(--primary)" radius={[6, 6, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );

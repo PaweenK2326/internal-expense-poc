@@ -2,6 +2,7 @@ import { getMockUser } from "@/lib/auth-mock";
 import { getDashboardSummary } from "@/lib/dashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { KpiCards } from "@/components/dashboard/kpi-cards";
+import { ClaimStatusCards } from "@/components/dashboard/claim-status-cards";
 import { CategoryPieChart } from "@/components/dashboard/category-pie-chart";
 import { ProjectBarChart } from "@/components/dashboard/project-bar-chart";
 
@@ -26,6 +27,7 @@ export default async function DashboardPage() {
         totalApprovedThisMonth={data.totalApprovedThisMonth}
         totalPending={data.totalPending}
       />
+      <ClaimStatusCards countByStatus={data.countByStatus} />
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>

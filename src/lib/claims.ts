@@ -37,6 +37,25 @@ export async function getClaimsForCurrentUser(): Promise<ClaimWithRelations[]> {
   return [];
 }
 
+/** All claims in scope (all statuses) for the history page. */
+export async function getClaimHistoryForCurrentUser(): Promise<ClaimWithRelations[]> {
+  const user = await getMockUser();
+  if (!user) return [];
+
+  const baseWhere =
+    user.role === "EMPLOYEE"
+      ? { employeeId: user.id }
+      : user.role === "MANAGER"
+        ? { employee: { department: user.department } }
+        : {};
+
+  return prisma.claimRequest.findMany({
+    where: baseWhere,
+    include: { employee: true, manager: true, cLevel: true },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 export async function getApprovalInboxClaims(): Promise<ClaimWithRelations[]> {
   return getClaimsForCurrentUser();
 }

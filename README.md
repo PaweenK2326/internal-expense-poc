@@ -21,6 +21,26 @@ Next.js 16 (App Router) + Prisma + Shadcn/UI. Employees submit claims; Managers 
 4. **Login (mock)**  
    Open [http://localhost:3000](http://localhost:3000). You are redirected to `/login`. Enter any email/name, choose **Role** (Employee, Manager, C-Level) and **Department**. First login creates the user.
 
+### Receipt storage (Vercel Blob)
+
+Receipts can be stored in **Vercel Blob** (recommended) or as **base64** in the database when Blob is not configured.
+
+**How to connect Vercel Blob**
+
+1. In the [Vercel Dashboard](https://vercel.com/dashboard), open your project → **Storage** tab.
+2. Click **Create Database** → choose **Blob**.
+3. Create a new Blob store (name it e.g. `expense-receipts`), set access (Private or Public), then **Create**.
+4. Vercel adds `BLOB_READ_WRITE_TOKEN` to your project. For local dev, pull env vars:
+   ```bash
+   vercel env pull
+   ```
+   Or copy the token from the store’s settings and add to `.env`:
+   ```
+   BLOB_READ_WRITE_TOKEN=vercel_blob_rw_xxxxx
+   ```
+
+When `BLOB_READ_WRITE_TOKEN` is set, receipt uploads go to Vercel Blob and the claim stores the blob URL. When the token is missing, the app falls back to storing the file as a base64 data URL in the database (works for small files; not ideal for production).
+
 ## Getting Started (dev server)
 
 ```bash

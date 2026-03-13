@@ -17,7 +17,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary | null> {
       : {}),
   };
 
-  const [approvedThisMonth, pendingClaims, allApproved] = await Promise.all([
+  const [approvedThisMonth, pendingClaims, allApproved, countByStatus] = await Promise.all([
     prisma.claimRequest.aggregate({
       where: {
         ...baseWhere,
@@ -42,6 +42,11 @@ export async function getDashboardSummary(): Promise<DashboardSummary | null> {
       },
       select: { category: true, project: true, amount: true },
     }),
+    prisma.claimRequest.groupBy({
+      by: ["status"],
+      where: baseWhere,
+      _count: { id: true },
+    }),
   ]);
 
   const byCategory = Object.entries(
@@ -58,9 +63,23 @@ export async function getDashboardSummary(): Promise<DashboardSummary | null> {
     }, {})
   ).map(([project, total]) => ({ project, total }));
 
+  const countByStatusMap = countByStatus.reduce(
+    (acc, row) => {
+      acc[row.status] = row._count.id;
+      return acc;
+    },
+    {} as Record<ClaimStatus, number>
+  );
+
   return {
     totalApprovedThisMonth: approvedThisMonth._sum.amount ?? 0,
     totalPending: pendingClaims,
+    countByStatus: {
+      PENDING_MANAGER: countByStatusMap[ClaimStatus.PENDING_MANAGER] ?? 0,
+      PENDING_C_LEVEL: countByStatusMap[ClaimStatus.PENDING_C_LEVEL] ?? 0,
+      APPROVED: countByStatusMap[ClaimStatus.APPROVED] ?? 0,
+      REJECTED: countByStatusMap[ClaimStatus.REJECTED] ?? 0,
+    },
     byCategory,
     byProject,
   };

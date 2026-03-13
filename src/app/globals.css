@@ -1,25 +1,26 @@
 @import "tailwindcss";
 
+/* Light pastel theme (logo-inspired). Always light; not too bright. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --card: #ffffff;
-  --card-foreground: #171717;
-  --popover: #ffffff;
-  --popover-foreground: #171717;
-  --primary: #171717;
-  --primary-foreground: #fafafa;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #18181b;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --accent: #f4f4f5;
-  --accent-foreground: #18181b;
-  --destructive: #dc2626;
-  --border: #e4e4e7;
-  --input: #e4e4e7;
-  --ring: #171717;
-  --radius: 0.5rem;
+  --background: #faf8f6;
+  --foreground: #4a4543;
+  --card: #fefcfb;
+  --card-foreground: #4a4543;
+  --popover: #fefcfb;
+  --popover-foreground: #4a4543;
+  --primary: #c85c5c;
+  --primary-foreground: #ffffff;
+  --secondary: #f5eeed;
+  --secondary-foreground: #4a3f3e;
+  --muted: #f0ebe9;
+  --muted-foreground: #6b6563;
+  --accent: #f5eeed;
+  --accent-foreground: #9b3a3a;
+  --destructive: #e8a0a0;
+  --border: #e8e2e0;
+  --input: #e5dfdd;
+  --ring: #c85c5c;
+  --radius: 0.75rem;
 }
 
 @theme inline {
@@ -48,28 +49,7 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --card: #0a0a0a;
-    --card-foreground: #ededed;
-    --popover: #0a0a0a;
-    --popover-foreground: #ededed;
-    --primary: #fafafa;
-    --primary-foreground: #171717;
-    --secondary: #27272a;
-    --secondary-foreground: #fafafa;
-    --muted: #27272a;
-    --muted-foreground: #a1a1aa;
-    --accent: #27272a;
-    --accent-foreground: #fafafa;
-    --destructive: #b91c1c;
-    --border: #27272a;
-    --input: #27272a;
-    --ring: #d4d4d8;
-  }
-}
+/* Always light mode; dark theme disabled for a soft, non-bright look */
 
 body {
   background: var(--background);

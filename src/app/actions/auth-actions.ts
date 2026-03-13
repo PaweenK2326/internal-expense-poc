@@ -7,13 +7,21 @@ import { prisma } from "@/lib/prisma";
 
 export type LoginFormValues = {
   email: string;
-  name: string;
+  name?: string;
   role: Role;
   department: string;
 };
 
+function displayNameFromEmail(email: string): string {
+  const local = email.split("@")[0] ?? "Employee";
+  return local.charAt(0).toUpperCase() + local.slice(1).replace(/[._-]/g, " ");
+}
+
 export async function loginAction(formData: LoginFormValues) {
   try {
+    const name =
+      formData.name?.trim() ?? displayNameFromEmail(formData.email);
+
     let user = await prisma.user.findFirst({
       where: { email: formData.email },
     });
@@ -21,7 +29,7 @@ export async function loginAction(formData: LoginFormValues) {
       user = await prisma.user.create({
         data: {
           email: formData.email,
-          name: formData.name,
+          name,
           role: formData.role,
           department: formData.department,
         },
@@ -30,7 +38,7 @@ export async function loginAction(formData: LoginFormValues) {
       user = await prisma.user.update({
         where: { id: user.id },
         data: {
-          name: formData.name,
+          name,
           role: formData.role,
           department: formData.department,
         },

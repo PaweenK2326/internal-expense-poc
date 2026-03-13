@@ -7,7 +7,7 @@ export default async function LoginPage() {
   if (user) redirect("/dashboard");
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-muted/40 to-accent/20 p-4">
       <LoginForm />
     </div>
   );

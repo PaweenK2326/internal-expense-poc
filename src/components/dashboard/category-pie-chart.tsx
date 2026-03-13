@@ -6,7 +6,7 @@ export type CategoryPieChartProps = {
   data: { category: string; total: number }[];
 };
 
-const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
+const COLORS = ["#c85c5c", "#94b8a8", "#e8c4a0", "#d4a5a5", "#9b8fb4", "#e8a0b0"];
 
 export function CategoryPieChart({ data }: CategoryPieChartProps) {
   if (!data.length) {

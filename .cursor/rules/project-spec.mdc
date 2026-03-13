@@ -1,0 +1,124 @@
+---
+description: Project vision and product/technical spec (full reference)
+alwaysApply: true
+---
+
+# Project: Internal Expense Claim System (PoC)
+
+When implementing or changing features, align with this spec.
+
+**Role:** Full-stack Developer (Next.js 16, TypeScript, Prisma, Shadcn/UI)
+
+## 1. Project Overview
+
+Create a professional Internal Expense Claim system to digitize paper-based processes.
+
+- **Goal:** Allow employees to submit claims, managers to approve (L1), and C-Level to provide final approval (L2).
+- **Key Outcome:** Monthly financial transparency via visual dashboards.
+
+## 2. User Persona & Data Isolation
+
+- **Employee:** Can only see and create their own claims.
+- **Manager:** Can see and approve claims from employees within their department.
+- **C-Level:** Full visibility of all claims across the company for strategic overview.
+
+## 3. Tech Stack
+
+- **Framework:** Next.js 16 (App Router)
+- **Database:** PostgreSQL via Prisma ORM
+- **UI:** Tailwind CSS + Shadcn/UI (Form, Table, Dialog, Card)
+- **Charts:** Recharts
+- **Icons:** Lucide-react
+- **File Storage:** Vercel Blob. Fallback to Base64 only if necessary.
+
+## 4. Database Schema (Prisma)
+
+```prisma
+enum Role {
+  EMPLOYEE
+  MANAGER
+  C_LEVEL
+}
+
+enum ClaimStatus {
+  PENDING_MANAGER
+  PENDING_C_LEVEL
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  name          String
+  role          Role           @default(EMPLOYEE)
+  department    String
+  managedClaims ClaimRequest[] @relation("ManagerRelation")
+  finalClaims   ClaimRequest[] @relation("CLevelRelation")
+  myClaims      ClaimRequest[] @relation("EmployeeRelation")
+}
+
+model ClaimRequest {
+  id          String      @id @default(uuid())
+  employeeId  String
+  employee    User        @relation("EmployeeRelation", fields: [employeeId], references: [id])
+  recordDate  DateTime    @default(now())
+  startDate   DateTime
+  endDate     DateTime
+  project     String
+  category    String
+  amount      Float
+  note        String?
+  receiptUrl  String?     // URL for Vercel Blob
+  status      ClaimStatus @default(PENDING_MANAGER)
+
+  managerId   String?     // Assigned Manager for L1
+  manager     User?       @relation("ManagerRelation", fields: [managerId], references: [id])
+
+  cLevelId    String?     // Assigned C-Level for L2
+  cLevel      User?       @relation("CLevelRelation", fields: [cLevelId], references: [id])
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+```
+
+## 5. Core Features & UI Requirements
+
+### A. Authentication (Mock or NextAuth)
+
+- Implement a simple role-selection login for PoC purposes.
+- Sidebar navigation should change based on User Role.
+
+### B. Submission Form (Employee)
+
+- Fields: Date Range (Start-End), Project (Select), Category (Select), Amount (Number), Note, Receipt (File Upload).
+- **Validation:** Amount > 0, End Date >= Start Date.
+
+### C. Approval Workflow (The "Engine")
+
+- **State Machine:**
+  1. `PENDING_MANAGER`: Visible to the employee's designated Manager.
+  2. `PENDING_C_LEVEL`: Becomes visible to C-Level after Manager approves.
+  3. `APPROVED` / `REJECTED`: Final states.
+- Managers and C-Level need an **"Approval Inbox"** table with "Approve" and "Reject" buttons.
+
+### D. Dashboard (Visuals)
+
+- Use **Recharts** to render:
+  - **Pie Chart:** Total Approved Amount grouped by `category`.
+  - **Bar Chart:** Total Approved Amount grouped by `project`.
+  - **KPI Cards:** Show "Total Approved This Month" and "Total Pending".
+
+## 6. API Contracts
+
+- `GET /api/claims`: Returns claims filtered by User Role and ID.
+- `POST /api/claims`: Creates new claim + triggers file upload.
+- `PATCH /api/claims/[id]/approve`: Updates status based on current state and user role.
+
+## 7. Implementation Notes
+
+- Use **Server Actions** for form submissions and status updates.
+- Use **Shadcn/UI DataTable** for all lists (with filtering/sorting).
+- Ensure "Mobile First" responsiveness for the submission form.
+- Handle "Empty States" for the Dashboard when no data exists.
