@@ -1,8 +1,27 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Internal Expense Claim System (PoC)
 
-## Getting Started
+Next.js 16 (App Router) + Prisma + Shadcn/UI. Employees submit claims; Managers (L1) and C-Level (L2) approve. Dashboard shows KPIs and charts.
 
-First, run the development server:
+## Setup
+
+1. **Environment**
+   - Copy `.env.example` to `.env` and set `DATABASE_URL` (PostgreSQL).
+
+2. **Database**
+   ```bash
+   npx prisma migrate dev
+   npx prisma generate
+   ```
+
+3. **Run**
+   ```bash
+   npm run dev
+   ```
+
+4. **Login (mock)**  
+   Open [http://localhost:3000](http://localhost:3000). You are redirected to `/login`. Enter any email/name, choose **Role** (Employee, Manager, C-Level) and **Department**. First login creates the user.
+
+## Getting Started (dev server)
 
 ```bash
 npm run dev

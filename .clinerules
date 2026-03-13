@@ -1,0 +1,55 @@
+rules:
+  naming_conventions:
+    variables_and_functions: "camelCase (e.g., getUserData, isLoading)"
+    react_components: "PascalCase (e.g., UserProfile, NavigationBar)"
+    files_and_directories: "kebab-case (e.g., user-profile.tsx, api-route.ts)"
+    typescript_interfaces_types: "PascalCase (e.g., UserResponse, DashboardProps)"
+    prisma_models: "PascalCase (e.g., User, OrderItem) with camelCase fields"
+    constants: "UPPER_SNAKE_CASE (e.g., MAX_RETRY_COUNT, API_BASE_URL)"
+
+  error_handling_and_logging:
+    server_side:
+      - "Use try/catch blocks in Server Actions and Route Handlers."
+      - "Return standardized error objects { success: false, error: string }."
+      - "Utilize Next.js error.tsx for UI-level boundary catching."
+    client_side:
+      - "Use Error Boundaries for component-level failures."
+      - "Log non-sensitive errors to console in development."
+    database:
+      - "Catch Prisma-specific errors and provide user-friendly messages."
+
+  component_structure_and_imports:
+    architecture:
+      - "Default to React Server Components (RSC)."
+      - "Keep 'use client' components at the leaf nodes."
+      - "Use Server Actions for all data mutations."
+    imports:
+      - "Use Absolute Paths with @/ prefix."
+      - "Order: React/Next.js, External Libraries (TanStack Query, Prisma), Internal, Styles."
+
+  data_fetching_and_state:
+    strategy:
+      - "Use TanStack Query for caching and state management."
+      - "Prefer Server Component Fetching: Prefetch data on the server using 'queryClient.prefetchQuery'."
+      - "Hydration: Use 'HydrationBoundary' to dehydrate state from Server to Client Components."
+    tanstack_query:
+      - "Define Query Keys in a central 'query-keys.ts' or as static constants to prevent typos."
+      - "Set sensible 'staleTime' (default 5-10 mins) to minimize unnecessary background refetches."
+      - "Use 'useSuspenseQuery' when pairing with React Suspense for better UX."
+
+  testing_requirements:
+    unit_integration:
+      - "Framework: Vitest + React Testing Library."
+      - "Requirements: Mock TanStack Query providers in tests using a custom render wrapper."
+    e2e:
+      - "Framework: Playwright."
+
+  security_and_best_practices:
+    typescript:
+      - "Strict mode: Enabled. No usage of 'any'."
+    prisma:
+      - "Use a singleton pattern for Prisma Client."
+      - "Validate incoming data with Zod before Prisma operations."
+    patterns:
+      - "Early Returns: Mandated for readability."
+      - "Separation of Concerns: Business logic in services/lib, UI in components."

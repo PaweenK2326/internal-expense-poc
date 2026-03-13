@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  EMPLOYEE
+  MANAGER
+  C_LEVEL
+}
+
+enum ClaimStatus {
+  PENDING_MANAGER
+  PENDING_C_LEVEL
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id             String         @id @default(uuid())
+  email          String         @unique
+  name           String
+  role           Role           @default(EMPLOYEE)
+  department     String
+  managedClaims  ClaimRequest[] @relation("ManagerRelation")
+  finalClaims    ClaimRequest[] @relation("CLevelRelation")
+  myClaims       ClaimRequest[] @relation("EmployeeRelation")
+}
+
+model ClaimRequest {
+  id         String      @id @default(uuid())
+  employeeId String
+  employee   User        @relation("EmployeeRelation", fields: [employeeId], references: [id])
+  recordDate DateTime    @default(now())
+  startDate  DateTime
+  endDate    DateTime
+  project    String
+  category   String
+  amount     Float
+  note       String?
+  receiptUrl String?
+  status     ClaimStatus @default(PENDING_MANAGER)
+
+  managerId String?
+  manager   User?       @relation("ManagerRelation", fields: [managerId], references: [id])
+
+  cLevelId String?
+  cLevel   User?       @relation("CLevelRelation", fields: [cLevelId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
