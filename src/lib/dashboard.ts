@@ -3,12 +3,26 @@ import { prisma } from "@/lib/prisma";
 import { ClaimStatus } from "@prisma/client";
 import type { DashboardSummary } from "@/types";
 
-export async function getDashboardSummary(): Promise<DashboardSummary | null> {
+export async function getDashboardSummary(
+  year?: number,
+  monthIndex0Based?: number
+): Promise<DashboardSummary | null> {
   const user = await getMockUser();
   if (!user) return null;
 
   const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const targetYear = year ?? now.getFullYear();
+  const targetMonthIndex = monthIndex0Based ?? now.getMonth();
+
+  const startOfMonth = new Date(targetYear, targetMonthIndex, 1);
+  const startOfNextMonth = new Date(targetYear, targetMonthIndex + 1, 1);
+
+  const monthDateFilter = {
+    recordDate: {
+      gte: startOfMonth,
+      lt: startOfNextMonth,
+    },
+  };
 
   const baseWhere = {
     ...(user.role === "EMPLOYEE" ? { employeeId: user.id } : {}),
@@ -22,13 +36,14 @@ export async function getDashboardSummary(): Promise<DashboardSummary | null> {
       where: {
         ...baseWhere,
         status: ClaimStatus.APPROVED,
-        updatedAt: { gte: startOfMonth },
+        ...monthDateFilter,
       },
       _sum: { amount: true },
     }),
     prisma.claimRequest.count({
       where: {
         ...baseWhere,
+        ...monthDateFilter,
         status: {
           in: [ClaimStatus.PENDING_MANAGER, ClaimStatus.PENDING_C_LEVEL],
         },
@@ -38,13 +53,16 @@ export async function getDashboardSummary(): Promise<DashboardSummary | null> {
       where: {
         ...baseWhere,
         status: ClaimStatus.APPROVED,
-        updatedAt: { gte: startOfMonth },
+        ...monthDateFilter,
       },
       select: { category: true, project: true, amount: true },
     }),
     prisma.claimRequest.groupBy({
       by: ["status"],
-      where: baseWhere,
+      where: {
+        ...baseWhere,
+        ...monthDateFilter,
+      },
       _count: { id: true },
     }),
   ]);
