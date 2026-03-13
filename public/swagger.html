@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
+    <meta name="color-scheme" content="light" />
     <title>Internal Expense Claim API – Swagger UI</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link
@@ -14,10 +15,26 @@
         margin: 0;
         padding: 0;
         height: 100%;
+        background: #fafafa;
+        color: #333;
+        color-scheme: light;
+      }
+      /* Force light mode: prevent dark theme from applying */
+      html.dark-mode,
+      html.dark-mode body {
+        background: #fafafa !important;
+        color: #333 !important;
+        color-scheme: light;
       }
       #swagger-ui {
         height: 100%;
       }
+      .swagger-ui .topbar { background: #89bf04; }
+      .swagger-ui .info .title { color: #333; }
+      .swagger-ui .opblock { border-color: rgba(59, 65, 81, 0.12); }
+      .swagger-ui .opblock .opblock-summary-method { background: #4990e2; }
+      .swagger-ui table thead tr th { border-bottom: 1px solid rgba(59, 65, 81, 0.12); color: #333; }
+      .swagger-ui .model { color: #333; }
     </style>
   </head>
   <body>
@@ -27,6 +44,7 @@
     <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
     <script>
       window.onload = () => {
+        document.documentElement.classList.remove("dark-mode");
         window.ui = SwaggerUIBundle({
           url: "/swagger.yaml",
           dom_id: "#swagger-ui",
@@ -34,8 +52,14 @@
           presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
           layout: "StandaloneLayout",
         });
+        // Keep light mode: remove dark-mode class if Swagger UI adds it
+        const observer = new MutationObserver(() => {
+          if (document.documentElement.classList.contains("dark-mode")) {
+            document.documentElement.classList.remove("dark-mode");
+          }
+        });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
       };
     </script>
   </body>
-  </html>
-
+</html>

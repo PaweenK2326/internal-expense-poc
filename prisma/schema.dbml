@@ -1,0 +1,45 @@
+// Generated from schema.prisma - Internal Expense Claim System
+
+Enum Role {
+  EMPLOYEE
+  MANAGER
+  C_LEVEL
+}
+
+Enum ClaimStatus {
+  PENDING_MANAGER
+  PENDING_C_LEVEL
+  APPROVED
+  REJECTED
+}
+
+Table User {
+  id varchar [pk, default: `gen_random_uuid()`]
+  email varchar [unique, not null]
+  name varchar [not null]
+  role Role [not null, default: 'EMPLOYEE']
+  department varchar [not null]
+}
+
+Table ClaimRequest {
+  id varchar [pk, default: `gen_random_uuid()`]
+  employee_id varchar [not null, ref: > User.id]
+  record_date datetime [default: `now()`]
+  start_date datetime [not null]
+  end_date datetime [not null]
+  project varchar [not null]
+  category varchar [not null]
+  amount decimal [not null]
+  note varchar [null]
+  receipt_url varchar [null]
+  status ClaimStatus [not null, default: 'PENDING_MANAGER']
+  manager_id varchar [null, ref: > User.id]
+  c_level_id varchar [null, ref: > User.id]
+  created_at datetime [default: `now()`]
+  updated_at datetime [default: `now()`]
+}
+
+// Relation names (Prisma):
+// - EmployeeRelation: ClaimRequest.employee_id > User.id
+// - ManagerRelation: ClaimRequest.manager_id > User.id
+// - CLevelRelation: ClaimRequest.c_level_id > User.id
