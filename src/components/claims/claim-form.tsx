@@ -30,8 +30,8 @@ export function ClaimForm() {
   const form = useForm<ClaimFormValues>({
     resolver: zodResolver(claimFormSchema),
     defaultValues: {
-      startDate: new Date().toISOString().slice(0, 10),
-      endDate: new Date().toISOString().slice(0, 10),
+      startDate: new Date(),
+      endDate: new Date(),
       project: "",
       category: "",
       amount: 0,
@@ -69,7 +69,14 @@ export function ClaimForm() {
               <Input
                 id="startDate"
                 type="date"
-                {...form.register("startDate", { valueAsDate: false })}
+                value={
+                  form.watch("startDate") instanceof Date
+                    ? form.watch("startDate").toISOString().slice(0, 10)
+                    : ""
+                }
+                onChange={(e) =>
+                  form.setValue("startDate", new Date(e.target.value))
+                }
               />
               {form.formState.errors.startDate && (
                 <p className="text-sm text-destructive">
@@ -82,7 +89,14 @@ export function ClaimForm() {
               <Input
                 id="endDate"
                 type="date"
-                {...form.register("endDate", { valueAsDate: false })}
+                value={
+                  form.watch("endDate") instanceof Date
+                    ? form.watch("endDate").toISOString().slice(0, 10)
+                    : ""
+                }
+                onChange={(e) =>
+                  form.setValue("endDate", new Date(e.target.value))
+                }
               />
               {form.formState.errors.endDate && (
                 <p className="text-sm text-destructive">

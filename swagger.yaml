@@ -1,0 +1,352 @@
+openapi: 3.0.3
+info:
+  title: Internal Expense Claim API
+  description: API for the Internal Expense Claim System (PoC). Claims are filtered by the authenticated user's role (Employee, Manager, C-Level). Authentication is cookie-based (mock auth).
+  version: 0.1.0
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+  - url: https://your-production-url.vercel.app
+    description: Production
+
+tags:
+  - name: claims
+    description: Expense claim list and approval
+  - name: dashboard
+    description: Dashboard summary and KPIs
+  - name: auth
+    description: Authentication
+
+paths:
+  /api/claims:
+    get:
+      tags:
+        - claims
+      summary: List claims
+      description: |
+        Returns claims filtered by the current user's role and ID.
+        - **EMPLOYEE**: Only their own claims.
+        - **MANAGER**: Claims with status PENDING_MANAGER from employees in the same department.
+        - **C_LEVEL**: Claims with status PENDING_C_LEVEL (all).
+      operationId: getClaims
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: List of claims
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClaimsListResponse"
+        "401":
+          description: Unauthorized (no valid session)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/claims/{id}/approve:
+    patch:
+      tags:
+        - claims
+      summary: Approve or reject a claim
+      description: |
+        Updates claim status based on current state and user role.
+        - **MANAGER**: Can approve PENDING_MANAGER → PENDING_C_LEVEL (or reject).
+        - **C_LEVEL**: Can approve PENDING_C_LEVEL → APPROVED (or reject).
+      operationId: approveClaim
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Claim request UUID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApproveClaimRequest"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Bad request (invalid id, action, or user cannot approve)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/dashboard:
+    get:
+      tags:
+        - dashboard
+      summary: Get dashboard summary
+      description: |
+        Returns KPIs and chart data for the current month, scoped by user role.
+        - **EMPLOYEE**: Own approved amount and pending count; byCategory/byProject for own claims.
+        - **MANAGER**: Department's approved amount and pending count; byCategory/byProject for department.
+        - **C_LEVEL**: Company-wide.
+      operationId: getDashboard
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/auth/logout:
+    post:
+      tags:
+        - auth
+      summary: Log out
+      description: Clears the mock auth cookie and redirects to /login.
+      operationId: logout
+      responses:
+        "307":
+          description: Redirect to /login
+          headers:
+            Location:
+              schema:
+                type: string
+                example: "/login"
+        "500":
+          description: Logout failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: internal-expense-mock-user
+      description: Mock user JSON (PoC). Contains id, email, name, role, department.
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Unauthorized"
+
+    SuccessResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+          example: true
+
+    Role:
+      type: string
+      enum:
+        - EMPLOYEE
+        - MANAGER
+        - C_LEVEL
+
+    ClaimStatus:
+      type: string
+      enum:
+        - PENDING_MANAGER
+        - PENDING_C_LEVEL
+        - APPROVED
+        - REJECTED
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          $ref: "#/components/schemas/Role"
+        department:
+          type: string
+
+    ClaimRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        employeeId:
+          type: string
+          format: uuid
+        employee:
+          $ref: "#/components/schemas/User"
+        recordDate:
+          type: string
+          format: date-time
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        project:
+          type: string
+        category:
+          type: string
+        amount:
+          type: number
+          format: float
+        note:
+          type: string
+          nullable: true
+        receiptUrl:
+          type: string
+          nullable: true
+        status:
+          $ref: "#/components/schemas/ClaimStatus"
+        managerId:
+          type: string
+          format: uuid
+          nullable: true
+        manager:
+          $ref: "#/components/schemas/User"
+          nullable: true
+        cLevelId:
+          type: string
+          format: uuid
+          nullable: true
+        cLevel:
+          $ref: "#/components/schemas/User"
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ClaimsListResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ClaimRequest"
+
+    ApproveClaimRequest:
+      type: object
+      required:
+        - action
+      properties:
+        action:
+          type: string
+          enum:
+            - approve
+            - reject
+
+    CategoryTotal:
+      type: object
+      properties:
+        category:
+          type: string
+        total:
+          type: number
+          format: float
+
+    ProjectTotal:
+      type: object
+      properties:
+        project:
+          type: string
+        total:
+          type: number
+          format: float
+
+    DashboardData:
+      type: object
+      properties:
+        totalApprovedThisMonth:
+          type: number
+          format: float
+          description: Sum of approved claim amounts this month
+        totalPending:
+          type: integer
+          description: Count of claims in PENDING_MANAGER or PENDING_C_LEVEL
+        byCategory:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryTotal"
+        byProject:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectTotal"
+
+    DashboardResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: "#/components/schemas/DashboardData"
